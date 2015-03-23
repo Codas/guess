@@ -22,7 +22,7 @@ std::vector<int> guesser::guess(std::string in, int count) const {
   matches.resize(std::min(100ul, matches.size()));
 
   score_exact_word_matches(in, matches);
-  matches.resize(count);
+  matches.resize(std::min(static_cast<std::size_t>(count), matches.size()));
 
   std::vector<int> ret(matches.size());
   for (int i = 0; i < matches.size(); ++i) {
