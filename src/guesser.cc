@@ -2,9 +2,11 @@
 
 #include <cmath>
 #include <cinttypes>
+#include <cstring>
 #include <fstream>
 #include <string>
 #include <vector>
+#include <algorithm>
 
 #include "guess/string_util.h"
 
