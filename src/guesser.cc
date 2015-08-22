@@ -21,7 +21,7 @@ guesser::guesser(std::vector<std::string> const& candidates)
 
 std::vector<int> guesser::guess(std::string in, int count) const {
   auto matches = match_trigrams(in);
-  matches.resize(std::min(100ul, matches.size()));
+  matches.resize(std::min(static_cast<std::size_t>(100), matches.size()));
 
   score_exact_word_matches(in, matches);
   matches.resize(std::min(static_cast<std::size_t>(count), matches.size()));
@@ -51,7 +51,7 @@ std::vector<guesser::match> guesser::match_trigrams(std::string& in) const {
 
   for (int i = 0; i < candidates_.size(); ++i) {
     int match_count = 0;
-    const int len_vec_candidate = candidates_[i].length() - 2;
+    const auto len_vec_candidate = candidates_[i].length() - 2;
 
     char const* substr_input = input;
     while (substr_input[2] != '\0') {

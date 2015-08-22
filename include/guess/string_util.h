@@ -6,7 +6,7 @@
 namespace guess {
 
 template <typename Function>
-inline void for_each_token(char* s, int length, Function f) {
+inline void for_each_token(char* s, std::size_t length, Function f) {
   int base = 0;
   int i = 0;
   while (i < length) {
