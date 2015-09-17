@@ -101,6 +101,8 @@ void guesser::score_exact_word_matches(std::string& in,
 }
 
 void guesser::normalize(std::string& s) {
+  replace_all(s, "è", "e");
+  replace_all(s, "é", "e");
   replace_all(s, "Ä", "a" );
   replace_all(s, "ä", "a" );
   replace_all(s, "Ö", "o" );
@@ -116,7 +118,11 @@ void guesser::normalize(std::string& s) {
   replace_all(s, ")", " " );
 
   for (int i = 0; i  < s.length(); ++i) {
-    if (!isalnum(s[i])) {
+    char c = s[i];
+    bool is_number = c >= '0' && c <= '9';
+    bool is_lower_case_char = c >= 'a' && c <= 'z';
+    bool is_upper_case_char = c >= 'A' && c <= 'Z';
+    if (!is_number && !is_lower_case_char && !is_upper_case_char) {
       s[i] = ' ';
     }
   }
