@@ -12,18 +12,32 @@
 
 namespace guess {
 
-guesser::guesser(std::vector<std::string> const& candidates)
+guesser::guesser(std::vector<std::pair<std::string, double>> const& candidates)
     : candidates_(candidates) {
+  normalize_all_candidates();
+}
+
+guesser::guesser(std::vector<std::string> const& candidates) {
+  candidates_.resize(candidates.size());
+  std::transform(begin(candidates), end(candidates), begin(candidates_),
+                 [](std::string const& c) { return std::make_pair(c, 0.0); });
+  normalize_all_candidates();
+}
+
+void guesser::normalize_all_candidates() {
   for (auto& candidate : candidates_) {
-    normalize(candidate);
+    normalize(candidate.first);
   }
 }
 
 std::vector<int> guesser::guess(std::string in, int count) const {
   auto matches = match_trigrams(in);
-  matches.resize(std::min(static_cast<std::size_t>(100), matches.size()));
-
   score_exact_word_matches(in, matches);
+
+  std::sort(std::begin(matches), std::end(matches));
+  matches.resize(std::min(static_cast<std::size_t>(20), matches.size()));
+
+  std::sort(std::begin(matches), std::end(matches));
   matches.resize(std::min(static_cast<std::size_t>(count), matches.size()));
 
   std::vector<int> ret(matches.size());
@@ -51,7 +65,7 @@ std::vector<guesser::match> guesser::match_trigrams(std::string& in) const {
 
   for (int i = 0; i < candidates_.size(); ++i) {
     int match_count = 0;
-    const auto len_vec_candidate = candidates_[i].length() - 2;
+    const auto len_vec_candidate = candidates_[i].first.length() - 2;
 
     char const* substr_input = input;
     while (substr_input[2] != '\0') {
@@ -60,14 +74,14 @@ std::vector<guesser::match> guesser::match_trigrams(std::string& in) const {
       trigram_input[2] = substr_input[2];
       ++substr_input;
 
-      char const* substr_candidate = candidates_[i].c_str();
+      char const* substr_candidate = candidates_[i].first.c_str();
       while (substr_candidate[2] != '\0') {
         trigram_candidate[0] = substr_candidate[0];
         trigram_candidate[1] = substr_candidate[1];
         trigram_candidate[2] = substr_candidate[2];
         ++substr_candidate;
 
-        if (*(uint32_t*) trigram_input == *(uint32_t*) trigram_candidate) {
+        if (*(uint32_t*)trigram_input == *(uint32_t*)trigram_candidate) {
           ++match_count;
           break;
         }
@@ -77,7 +91,6 @@ std::vector<guesser::match> guesser::match_trigrams(std::string& in) const {
     double denominator = sqrt_len_vec_input * std::sqrt(len_vec_candidate);
     matches[i].cos_sim = match_count / denominator;
   }
-  std::sort(std::begin(matches), std::end(matches));
 
   return matches;
 }
@@ -85,7 +98,7 @@ std::vector<guesser::match> guesser::match_trigrams(std::string& in) const {
 void guesser::score_exact_word_matches(std::string& in,
                                        std::vector<match>& matches) const {
   for (int i = 0; i < matches.size(); ++i) {
-    auto& candidate = candidates_[matches[i].index];
+    auto& candidate = candidates_[matches[i].index].first;
     for_each_token(in, [&](char* input_token) {
       for_each_token(candidate, [&](char* candidate_token) {
         if (strcmp(candidate_token, input_token) == 0) {
@@ -103,21 +116,21 @@ void guesser::score_exact_word_matches(std::string& in,
 void guesser::normalize(std::string& s) {
   replace_all(s, "è", "e");
   replace_all(s, "é", "e");
-  replace_all(s, "Ä", "a" );
-  replace_all(s, "ä", "a" );
-  replace_all(s, "Ö", "o" );
-  replace_all(s, "ö", "o" );
-  replace_all(s, "Ü", "u" );
-  replace_all(s, "ü", "u" );
+  replace_all(s, "Ä", "a");
+  replace_all(s, "ä", "a");
+  replace_all(s, "Ö", "o");
+  replace_all(s, "ö", "o");
+  replace_all(s, "Ü", "u");
+  replace_all(s, "ü", "u");
   replace_all(s, "ß", "ss");
-  replace_all(s, "-", " " );
-  replace_all(s, "/", " " );
-  replace_all(s, ".", " " );
-  replace_all(s, ",", " " );
-  replace_all(s, "(", " " );
-  replace_all(s, ")", " " );
+  replace_all(s, "-", " ");
+  replace_all(s, "/", " ");
+  replace_all(s, ".", " ");
+  replace_all(s, ",", " ");
+  replace_all(s, "(", " ");
+  replace_all(s, ")", " ");
 
-  for (int i = 0; i  < s.length(); ++i) {
+  for (int i = 0; i < s.length(); ++i) {
     char c = s[i];
     bool is_number = c >= '0' && c <= '9';
     bool is_lower_case_char = c >= 'a' && c <= 'z';

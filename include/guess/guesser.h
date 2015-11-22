@@ -8,6 +8,7 @@ namespace guess {
 
 struct guesser {
   guesser(std::vector<std::string> const& candidates);
+  guesser(std::vector<std::pair<std::string, double>> const& candidates);
 
   std::vector<int> guess(std::string in, int count = 10) const;
 
@@ -20,6 +21,8 @@ private:
     double cos_sim;
   };
 
+  void normalize_all_candidates();
+
   std::vector<match> match_trigrams(std::string& in) const;
 
   void score_exact_word_matches(std::string& in,
@@ -27,7 +30,7 @@ private:
 
   static void normalize(std::string& s);
 
-  std::vector<std::string> candidates_;
+  std::vector<std::pair<std::string, double>> candidates_;
 };
 
 }  // namespace guess
